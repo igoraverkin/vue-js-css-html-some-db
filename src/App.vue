@@ -3,14 +3,14 @@
     <input id="tabInput" type="radio" name="tab" class="sign-in" checked><label for="tabInput" class="tab" @click="showForm(1)">Вход</label>
     <input id="tabRegistration" type="radio" name="tab" class="sign-up"><label for="tabRegistration" class="tab" @click="showForm(2)">Регистрация</label>
     <transition name="component-fade">
-      <form class="sign-in-form" v-show="showSignInForm">
+      <form class="sign-in-form" v-show="showSignInForm" @submit.prevent="userAccept">
         <div class="input-group">
           <label for="pass" class="label">Почта</label>
-          <input id="pass" type="email" class="input" required>
+          <input id="pass" type="email" class="input" required v-model="user.email" >
         </div>
         <div class="input-group">
           <label for="pass" class="label">Пароль</label>
-          <input id="pass" type="password" class="input" data-type="password" required>
+          <input id="pass" type="password" class="input" data-type="password" required v-model="user.password">
         </div>          
         <button type="submit">ВОЙТИ</button>
         <div class="hr"></div>
@@ -20,18 +20,18 @@
       </form>
     </transition>
     <transition name="component-fade">
-      <form class="sign-up-form" v-show="showSignUpForm">
+      <form class="sign-up-form" v-show="showSignUpForm" @submit.prevent="registerUser">
         <div class="input-group">
           <label for="pass" class="label">Почта</label>
-          <input id="pass" type="email" class="input" required>
+          <input id="pass" type="email" class="input" required v-model="user.email">
         </div>
         <div class="input-group">
           <label for="pass" class="label">Пароль</label>
-          <input id="pass" type="password" class="input" data-type="password" required>
+          <input id="pass" type="password" class="input" data-type="password" required v-model="user.password">
         </div>
         <div class="input-group">
           <label for="pass" class="label">Повторить пароль</label>
-          <input id="pass" type="password" class="input" data-type="password" required>
+          <input id="pass" type="password" class="input" data-type="password" required v-model="user.repassword">
         </div>
         <button type="submit">РЕГИСТРАЦИЯ</button>
         <div class="hr"></div>
@@ -47,6 +47,11 @@
 export default {
   data() {
     return {
+      user: {
+        email: '',
+        password: '',
+        repassword: ''
+      },
       showSignInForm: true,
       showSignUpForm: false
     }
@@ -70,6 +75,29 @@ export default {
     useRegistration() {
       this.showSignInForm = true
       this.showSignUpForm = false
+    },
+    registerUser(){
+      if(this.user.password !== this.user.repassword || this.user.password.length <6) {
+        this.error = true;
+      } else{
+        firebase.auth().createUserWithEmailAndPassword(this.user.email, this.user.password)
+        alert('Welcome')
+      }
+    },
+    userAccept(){
+        firebase.auth().signInWithEmailAndPassword(this.user.email,this.user.password)
+        .then (response => {
+          const sett ={
+            email:response.email,
+            uid:response.uid
+          }
+          if(this.user.email==response.email){
+            alert('Accept User');
+          }
+          else{
+            alert('Missed');
+          }
+        })
     }
   }  
 }
